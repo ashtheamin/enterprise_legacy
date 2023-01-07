@@ -2,7 +2,7 @@
 BIN = enterprise
 
 # Flags
-CFLAGS += -Wall -Wextra -pedantic -fsanitize=address,leak,undefined
+CFLAGS += -Wall -Wextra -pedantic -fsanitize=address,leak,undefined -g
 
 SRC = src/main.c
 OBJ = $(SRC:.c=.o)

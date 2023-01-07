@@ -25,20 +25,29 @@
 #define NK_IMPLEMENTATION
 #define NK_SDL_GLES2_IMPLEMENTATION
 
-// Import libraries
+// Import libraries.
 #include "constants.c"
 #include "../third_party/Nuklear/nuklear.h"
 #include "../third_party/Nuklear/demo/sdl_opengles2/nuklear_sdl_gles2.h"
 #include "../third_party/Nuklear/demo/common/style.c"
 
+// Import enterprise.
+#include "enterprise.c"
+
 // Define the program state structure used to hold everything.
 enum program_status {program_status_quit, program_status_running,
 };
 struct program {
+    // GUI related structures.
     SDL_Window* window;
     struct nk_context *nk_context;
     SDL_GLContext glctx;
+
+    // Program status.
     enum program_status status;
+    
+    // Enterprise data structure.
+    struct enterprise* enterprise;
 };
 
 // Initialise a new program state and initialise associated libraries.
@@ -65,33 +74,31 @@ struct program* program_init() {
     SDL_WINDOW_SHOWN|SDL_WINDOW_ALLOW_HIGHDPI);
 
     // Return NULL and free resources on failure
-    if (program->window == NULL) 
-    printf("SDL_GetError(): %s", SDL_GetError());SDL_Quit();
-    free(program);return NULL;
+    if (program->window == NULL) {
+        printf("SDL_GetError(): %s", SDL_GetError());
+        SDL_Quit();free(program);return NULL;
+    };
 
     // Initialise OpenGL
     program->glctx = SDL_GL_CreateContext(program->window);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Initialise Nuklear library context. 
-    // Return NULL and free resources on failure.
     program->nk_context = nk_sdl_init(program->window);
-    if (program->nk_context == NULL) 
-    SDL_GL_DeleteContext(program->glctx);SDL_DestroyWindow(program->window);
-    SDL_Quit();free(program);return NULL;
 
     // Initialise font
     struct nk_font_atlas *atlas;
     nk_sdl_font_stash_begin(&atlas);
-    struct nk_font *font = nk_font_atlas_add_from_file(atlas, 
-    "../third_party/Nuklear/extra_font/ProggyClean.ttf",
+    struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "ProggyClean.ttf", 
     ENTERPRISE_FONT_SIZE, 0);
     nk_sdl_font_stash_end();
+    nk_style_set_font(program->nk_context, &clean->handle);
 
-    // Return NULL if font failed to load.
-    if (font == NULL) nk_sdl_shutdown();SDL_GL_DeleteContext(program->glctx);
-    SDL_DestroyWindow(program->window);SDL_Quit();free(program);return NULL;
-    nk_style_set_font(program->nk_context, &font->handle);
+    // Set Nuklear theme:
+    set_style(program->nk_context, THEME_BLUE);
+
+    // Set program status:
+    program->status = program_status_running;
 
     // Return program pointer.
     return program;
@@ -114,7 +121,7 @@ void program_loop(void* loop_argument) {
 
     // Initialise and draw Nuklear GUI widgets + elements.
     if (nk_begin(program->nk_context, "Enterprise", 
-    nk_rect(50, 50, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
+    nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
         nk_layout_row_dynamic(program->nk_context, 40, 1);
         nk_label(program->nk_context, "Enterprise", NK_TEXT_CENTERED);
     }
@@ -154,11 +161,13 @@ int main() {
         #include <emscripten.h>
         emscripten_set_main_loop_arg(program_loop, (void*)program, 0, 1);
     #else
-        while (program->status ) program_loop((void*)program);
+        while (program->status != program_status_quit) {
+            program_loop((void*)program);
+        }
     #endif
 
     // Free all resources associated with program and exit.
-    void program_quit(struct program* program);
+    program_quit(program);
     return 0;
 }
 

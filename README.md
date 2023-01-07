@@ -17,7 +17,7 @@ Ensure you have a C compiler like GCC installed, and libsdl2 setup.
 - Alternatively, run `make -j $(nproc) web`
 - The resulting wasm and js files can be found in bin/web
 
-# Third Party Libraries:
+## Third Party Libraries:
 Thank you to all third party projects
 
 
