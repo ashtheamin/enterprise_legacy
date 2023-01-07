@@ -55,7 +55,8 @@ struct program {
 struct program* program_init() {
     // Allocate program state memory and return pointer to it.
     struct program* program = malloc(sizeof(struct program));
-    if (program == NULL) return NULL;
+    if (program == NULL) {printf("Failed to initailise program state.\n");
+    return NULL;}
 
     // Initialise SDL.
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
@@ -75,30 +76,47 @@ struct program* program_init() {
 
     // Return NULL and free resources on failure
     if (program->window == NULL) {
-        printf("SDL_GetError(): %s", SDL_GetError());
-        SDL_Quit();free(program);return NULL;
+        printf("Failed to initialse SDL Window.SDL_GetError(): %s", 
+        SDL_GetError());SDL_Quit();free(program);return NULL;
     };
 
-    // Initialise OpenGL
+    // Initialise OpenGL. Exit on failure
     program->glctx = SDL_GL_CreateContext(program->window);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    if (program->glctx == NULL) {printf("Failed to initialise OpenGL context\
+    . SDL_GetError %s\n", SDL_GetError());
+    SDL_DestroyWindow(program->window);SDL_Quit();free(program);return NULL;}
 
-    // Initialise Nuklear library context. 
+    // Initialise Nuklear library context.
+    // Exit on failure.
     program->nk_context = nk_sdl_init(program->window);
+    if (program->nk_context == NULL) {printf("Failed to init Nuklear library");
+    SDL_GL_DeleteContext(program->glctx);
+    SDL_DestroyWindow(program->window);SDL_Quit();free(program);return NULL;}
 
-    // Initialise font
+    // Load font.
     struct nk_font_atlas *atlas;
     nk_sdl_font_stash_begin(&atlas);
-    struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "ProggyClean.ttf", 
+    struct nk_font *font = nk_font_atlas_add_from_file(atlas, "ProggyClean.ttf", 
     ENTERPRISE_FONT_SIZE, 0);
     nk_sdl_font_stash_end();
-    nk_style_set_font(program->nk_context, &clean->handle);
+
+    // Return NULL on failure to load font.
+    if (font == NULL) {printf("Failed to load font 'ProggyClean.ttf'. Exiting.\n");
+    nk_sdl_shutdown();SDL_GL_DeleteContext(program->glctx);
+    SDL_DestroyWindow(program->window);SDL_Quit();free(program);return NULL;}
+
+    // Set font on successful font load.
+    nk_style_set_font(program->nk_context, &font->handle);
 
     // Set Nuklear theme:
     set_style(program->nk_context, THEME_BLUE);
 
     // Set program status:
     program->status = program_status_running;
+
+    // Initialise Enterprise database.
+    program->enterprise = enterprise_new();
 
     // Return program pointer.
     return program;
@@ -142,10 +160,19 @@ void program_loop(void* loop_argument) {
 // Free all resources and exit.
 void program_quit(struct program* program) {
     if (program == NULL) return;
+
+    // Shutdown Nuklear
     nk_sdl_shutdown();
+
+    // Shutdown OpenGL and SDL.
     SDL_GL_DeleteContext(program->glctx);
     SDL_DestroyWindow(program->window);
     SDL_Quit();
+
+    // Free enterprise database memory.
+    if (program->enterprise != NULL) enterprise_quit(program->enterprise);
+
+    // Free program heap memory.
     free(program);
 }
 
