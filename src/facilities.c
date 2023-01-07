@@ -240,3 +240,50 @@ void facility_list_delete_node(struct facility_list *facility_list, char *id) {
     free(facility);
     return;
 }
+
+// Select the previous node as the currently selected item.
+void facility_list_select_previous_node(struct facility_list *facility_list) {
+    if (facility_list == NULL) return;
+    if (facility_list->head == NULL) return;
+
+    struct facility_node* facility = facility_list->head;
+    while (facility != NULL) {
+        if (strcpy(facility->id, facility_list->id_currently_selected) == 0) {
+            if (facility->prev != NULL) {
+                strcpy(facility_list->id_currently_selected, facility->prev->id);
+                return;
+            }
+            if (facility->prev == NULL) {
+                struct facility_node* temp = facility;
+                while (temp->next != NULL) {
+                    temp = temp->next;
+                }
+                strcpy(facility_list->id_currently_selected, temp->id);
+                return;
+            }
+        }
+        facility = facility->next;
+    }
+}
+
+// Select the next node as the currently selected item.
+void facility_list_select_next_node(struct facility_list *facility_list) {
+    if (facility_list == NULL) return;
+    if (facility_list->head == NULL) return;
+
+    struct facility_node* facility = facility_list->head;
+    while (facility != NULL) {
+        if (strcpy(facility->id, facility_list->id_currently_selected) == 0) {
+            if (facility->next != NULL) {
+                strcpy(facility_list->id_currently_selected, facility->next->id);
+                return;
+            }
+            if (facility->next == NULL) {
+                strcpy(facility_list->id_currently_selected,\
+                facility_list->head->id);
+                return;
+            }
+        }
+        facility = facility->next;
+    }
+}
