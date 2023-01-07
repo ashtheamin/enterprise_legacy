@@ -12,14 +12,14 @@
 
 /* How facilities work.
 Facilities are stored in a struct that contains a pointer to the head of a
-linked list containing all the facilities. The struct that stores the linked 
+linked list containing all the facilities. The struct that stores the linked
 list is directly added to the enterprise struct and stores metadata about the
 list. All facilities are assigned a unique ID, no two facilities can have the
 same ID, the facility_list structure keeps track of that.
 
 Data structures:
 Facility_node: An individual facility.
-Facility_list: A structure holding important metadata about the facility 
+Facility_list: A structure holding important metadata about the facility
 linked list.
 
 Facility list metadata:
@@ -38,21 +38,22 @@ struct facility_node {
     char phone[ENTERPRISE_STRING_LENGTH];
     char address[ENTERPRISE_STRING_LENGTH];
 
-    struct facility_node* prev;
-    struct facility_node* next;
+    struct facility_node *prev;
+    struct facility_node *next;
 };
 
 // Facility node constructor and initialiser.
 // Returns facility node on success, or NULL on failure.
-struct facility_node* facility_node_new() {
-    struct facility_node* facility = malloc(sizeof(struct facility_node));
-    if (facility == NULL) return NULL;
+struct facility_node *facility_node_new() {
+    struct facility_node *facility = malloc(sizeof(struct facility_node));
+    if (facility == NULL)
+        return NULL;
     strcpy(facility->id, "");
     strcpy(facility->name, "");
-    strcpy(facility->email ,"");
+    strcpy(facility->email, "");
     strcpy(facility->phone, "");
     strcpy(facility->address, "");
-    
+
     facility->prev = NULL;
     facility->next = NULL;
 
@@ -61,25 +62,28 @@ struct facility_node* facility_node_new() {
 
 // Facility list metadata structure.
 struct facility_list {
-    struct facility_node* head;
+    struct facility_node *head;
     char id_last_assigned[ENTERPRISE_STRING_LENGTH];
     char id_currently_selected[ENTERPRISE_STRING_LENGTH];
 };
 
 // Facility list constructor.
 // Returns facility list on success, or NULL on failure.
-struct facility_list* facility_list_new() {
-    struct facility_list* facility_list = malloc(sizeof(struct facility_list));
-    if (facility_list == NULL) return NULL;
+struct facility_list *facility_list_new() {
+    struct facility_list *facility_list = malloc(sizeof(struct facility_list));
+    if (facility_list == NULL)
+        return NULL;
     facility_list->head = NULL;
     return facility_list;
 }
 
 // Free an entire facility linked list
-void facility_node_linked_list_free(struct facility_node* facility) {
-    if (facility == NULL) return;
-    struct facility_node* next = NULL;
-    while (facility != NULL) {
+void facility_node_linked_list_free(struct facility_node *facility) {
+    if (facility == NULL)
+        return;
+    struct facility_node *next = NULL;
+    while (facility != NULL)
+    {
         next = facility->next;
         free(facility);
         facility = next;
@@ -87,80 +91,152 @@ void facility_node_linked_list_free(struct facility_node* facility) {
 }
 
 // Free all memory associated with a facility list.
-void facility_list_free(struct facility_list* facility_list) {
-    if (facility_list == NULL) return;
+void facility_list_free(struct facility_list *facility_list) {
+    if (facility_list == NULL)
+        return;
 
-    if (facility_list->head != NULL) 
-    {facility_node_linked_list_free(facility_list->head);}
+    if (facility_list->head != NULL)
+    {
+        facility_node_linked_list_free(facility_list->head);
+    }
 
     free(facility_list);
     return;
 }
 
 // Append a new facility to a facility list.
-void facility_list_append(struct facility_list* facility_list) {
-    if (facility_list == NULL) return;
+void facility_list_append(struct facility_list *facility_list) {
+    if (facility_list == NULL)
+        return;
 
     // Increment unique ID by 1.
     char buffer[ENTERPRISE_STRING_LENGTH];
-    sprintf(buffer, "%lld", atoll(facility_list->id_last_assigned)+1);
+    sprintf(buffer, "%lld", atoll(facility_list->id_last_assigned) + 1);
     strcpy(facility_list->id_last_assigned, buffer);
 
     // Add new node to start of facility list if facility linked list does
     // not exist.
-    if (facility_list->head == NULL) {
+    if (facility_list->head == NULL)
+    {
         facility_list->head = facility_node_new();
         strcpy(facility_list->head->id, facility_list->id_last_assigned);
-        strcpy(facility_list->id_currently_selected,\
-        facility_list->id_last_assigned);
+        strcpy(facility_list->id_currently_selected,
+               facility_list->id_last_assigned);
         return;
     }
 
     // Else add the new node to the end of the list.
-    struct facility_node* facility = facility_list->head;
-    while (facility->next != NULL) {
+    struct facility_node *facility = facility_list->head;
+    while (facility->next != NULL)
+    {
         facility = facility->next;
     }
     facility->next = facility_node_new();
     facility->next->prev = facility;
 
     strcpy(facility->next->id, facility_list->id_last_assigned);
-    strcpy(facility_list->id_currently_selected,\
-    facility_list->id_last_assigned);
-    
+    strcpy(facility_list->id_currently_selected,
+           facility_list->id_last_assigned);
+
     return;
 }
 
 // Get the number of facility nodes in the facility list
-int facility_list_get_num_facility_nodes(struct facility_list* facility_list) {
-    if (facility_list == NULL) return 0;
-    if (facility_list->head == NULL) return 0;
+int facility_list_get_num_facility_nodes(struct facility_list *facility_list) {
+    if (facility_list == NULL)
+        return 0;
+    if (facility_list->head == NULL)
+        return 0;
 
-    struct facility_node* facility = facility_list->head;
+    struct facility_node *facility = facility_list->head;
     int facility_count = 0;
-    while (facility != NULL) {
+    while (facility != NULL)
+    {
         facility_count++;
         facility = facility->next;
     }
     return facility_count;
 }
 
-// Return a pointer to a facility node according to ID. 
+// Return a pointer to a facility node according to ID.
 // Returns NULL on failure.
-struct facility_node* facility_list_get_node\
-(struct facility_list* facility_list, char* id) {
-    if (facility_list == NULL || id == NULL) return NULL;
-    if (facility_list->head == NULL) return NULL;
+struct facility_node *facility_list_get_node\
+(struct facility_list *facility_list, char *id) {
+    if (facility_list == NULL || id == NULL)
+        return NULL;
+    if (facility_list->head == NULL)
+        return NULL;
 
-    struct facility_node* facility = facility_list->head;
-    while (facility != NULL) {
-        if (strcmp(facility->id, id) == 0) return facility;
+    struct facility_node *facility = facility_list->head;
+    while (facility != NULL)
+    {
+        if (strcmp(facility->id, id) == 0)
+            return facility;
         facility = facility->next;
     }
     return NULL;
 }
 
 // Searches for a facility by ID and deletes it
-void facility_list_delete_node(struct facility_list* facility_list, char* id) {
+void facility_list_delete_node(struct facility_list *facility_list, char *id) {
+    if (facility_list == NULL || id == NULL)
+        return;
+    if (facility_list->head == NULL)
+        return;
 
+    // Delete the head if it is the ID that is requested to be deleted.
+    if (strcmp(id, facility_list->head->id) == 0)
+    {
+        if (facility_list->head->next == NULL)
+        {
+            free(facility_list->head);
+            facility_list->head = NULL;
+            return;
+        }
+
+        struct facility_node *next = facility_list->head->next;
+        free(facility_list->head);
+        facility_list->head = next;
+        return;
+    }
+
+    // Else search for the facility to delete.
+    struct facility_node *facility = facility_list->head;
+    while (facility != NULL)
+    {
+        if (strcmp(facility->id, id) == 0)
+            break;
+        facility = facility->next;
+    }
+    if (facility == NULL)
+        return;
+
+    // Fix the pointers of the next and previous nodes to the facility to be
+    // deleted in order to ensure that traversal still works.
+
+    struct facility_node *prev = facility->prev;
+    struct facility_node *next = facility->next;
+
+    if (prev != NULL) {
+        if (next == NULL) {
+            prev->next = NULL;
+            strcpy(facility_list->id_currently_selected, prev->id);
+        }
+        if (next != NULL) {
+            prev->next = next;
+            next->prev = prev;
+            strcpy(facility_list->id_currently_selected, next->id);
+        }
+    }
+
+    if (prev == NULL) {
+        if (next != NULL) {
+            next->prev = NULL;
+            strcpy(facility_list->id_currently_selected, next->id);
+        }
+    }
+
+    // Delete the facility
+    free(facility);
+    return;
 }
