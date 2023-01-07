@@ -1,0 +1,1 @@
+enum program_status {program_status_quit, program_status_running};

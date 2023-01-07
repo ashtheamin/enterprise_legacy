@@ -45,9 +45,13 @@ enterprise database itself.
 // Import enterprise.
 #include "enterprise.c"
 
+#ifndef PROGRAM_STATES
+#define PROGRAM_STATES
+#include "program_states.c"
+#endif
+
 // Define the program state structure used to hold everything.
-enum program_status {program_status_quit, program_status_running,
-};
+
 struct program {
     // GUI related structures.
     SDL_Window* window;

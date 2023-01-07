@@ -10,6 +10,11 @@
 
 #include "constants.c"
 
+#ifndef PROGRAM_STATES
+#define PROGRAM_STATES
+#include "program_states.c"
+#endif
+
 /* How facilities work.
 Facilities are stored in a struct that contains a pointer to the head of a
 linked list containing all the facilities. The struct that stores the linked
@@ -286,4 +291,11 @@ void facility_list_select_next_node(struct facility_list *facility_list) {
         }
         facility = facility->next;
     }
+}
+
+
+enum program_status facility_editor(struct nk_context* nkctx,\
+struct facility_list* facility_list) {
+    if (nkctx == NULL || facility_list == NULL) return program_status_running;
+    return program_status_running;
 }
