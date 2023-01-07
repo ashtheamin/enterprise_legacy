@@ -25,6 +25,17 @@
 #define NK_IMPLEMENTATION
 #define NK_SDL_GLES2_IMPLEMENTATION
 
+
+/*
+File description: main.c contains a program status struct and manages the 
+execution of the enterprise software.
+
+Data structures:
+- The program struct stores information about rendering, program status, and the
+enterprise database itself. 
+
+*/
+
 // Import libraries.
 #include "constants.c"
 #include "../third_party/Nuklear/nuklear.h"
