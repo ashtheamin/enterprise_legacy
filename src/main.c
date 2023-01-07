@@ -5,6 +5,16 @@
 // It is licensed under the MIT.
 // Big thank you to the Nuklear team for providing the GUI API.
 
+/*
+File description: main.c contains a program status struct and manages the 
+execution of the enterprise software.
+
+Data structures:
+- The program struct stores information about rendering, program status, and the
+enterprise database itself. 
+*/
+
+// Import C standard libraries.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -15,34 +25,26 @@
 #include <limits.h>
 #include <time.h>
 
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#define NK_IMPLEMENTATION
-#define NK_SDL_GLES2_IMPLEMENTATION
 
-
-/*
-File description: main.c contains a program status struct and manages the 
-execution of the enterprise software.
-
-Data structures:
-- The program struct stores information about rendering, program status, and the
-enterprise database itself. 
-
-*/
-
-// Import libraries.
-#include "constants.c"
-#include "../third_party/Nuklear/nuklear.h"
-#include "../third_party/Nuklear/demo/sdl_opengles2/nuklear_sdl_gles2.h"
-#include "../third_party/Nuklear/demo/common/style.c"
+// Import Nuklear.
+#ifndef ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+#define ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+    #define NK_INCLUDE_FIXED_TYPES
+    #define NK_INCLUDE_STANDARD_IO
+    #define NK_INCLUDE_STANDARD_VARARGS
+    #define NK_INCLUDE_DEFAULT_ALLOCATOR
+    #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+    #define NK_INCLUDE_FONT_BAKING
+    #define NK_INCLUDE_DEFAULT_FONT
+    #define NK_IMPLEMENTATION
+    #define NK_SDL_GLES2_IMPLEMENTATION
+    #include "../third_party/Nuklear/nuklear.h"
+    #include "../third_party/Nuklear/demo/sdl_opengles2/nuklear_sdl_gles2.h"
+    #include "../third_party/Nuklear/demo/common/style.c"
+#endif
 
 // Import enterprise.
+#include "constants.c"
 #include "enterprise.c"
 
 #ifndef PROGRAM_STATES
@@ -155,8 +157,8 @@ void program_loop(void* loop_argument) {
     // Initialise and draw Nuklear GUI widgets + elements.
     if (nk_begin(program->nk_context, "Enterprise", 
     nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
-        nk_layout_row_dynamic(program->nk_context, 40, 1);
-        nk_label(program->nk_context, "Enterprise", NK_TEXT_CENTERED);
+        facility_editor(program->nk_context\
+        ,program->enterprise->facility_list);
     }
     nk_end(program->nk_context);
 

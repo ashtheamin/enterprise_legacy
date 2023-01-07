@@ -15,6 +15,24 @@
 #include "program_states.c"
 #endif
 
+
+// Import Nuklear.
+#ifndef ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+#define ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+    #define NK_INCLUDE_FIXED_TYPES
+    #define NK_INCLUDE_STANDARD_IO
+    #define NK_INCLUDE_STANDARD_VARARGS
+    #define NK_INCLUDE_DEFAULT_ALLOCATOR
+    #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+    #define NK_INCLUDE_FONT_BAKING
+    #define NK_INCLUDE_DEFAULT_FONT
+    #define NK_IMPLEMENTATION
+    #define NK_SDL_GLES2_IMPLEMENTATION
+    #include "../third_party/Nuklear/nuklear.h"
+    #include "../third_party/Nuklear/demo/sdl_opengles2/nuklear_sdl_gles2.h"
+    #include "../third_party/Nuklear/demo/common/style.c"
+#endif
+
 /* How facilities work.
 Facilities are stored in a struct that contains a pointer to the head of a
 linked list containing all the facilities. The struct that stores the linked
@@ -294,8 +312,10 @@ void facility_list_select_next_node(struct facility_list *facility_list) {
 }
 
 
-enum program_status facility_editor(struct nk_context* nkctx,\
+enum program_status facility_editor(struct nk_context* ctx,\
 struct facility_list* facility_list) {
-    if (nkctx == NULL || facility_list == NULL) return program_status_running;
+    if (ctx == NULL || facility_list == NULL) return program_status_running;
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    nk_label(ctx, "Facility Editor", NK_TEXT_CENTERED);
     return program_status_running;
 }
