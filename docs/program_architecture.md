@@ -7,10 +7,10 @@ enterprise database itself.
 - It initialises all the required inforamtion, and enters into a program loop
 that handles user input and draws the GUI interface to the screen.
 
-## The rendering:
+## Rendering:
 - This program uses OpenGL, SDL and the Nuklear GUI toolkit to render graphics.
 
-## The enterprise struct:
+## The Enterprise Struct:
 - This struct contains all the data related to the enterprise.
 - It contains pointers to linked lists that store related objects and metadata 
 for the mentioned linked lists.
@@ -23,6 +23,11 @@ linked list containing all the facilities.
 
 - All facilities are assigned a unique ID, no two facilities can have the
 same ID, the facility_list structure keeps track of that.
+
+- The metadata includes the last unique ID, as well as the currently selected
+facility.
+
+- This is so the facility editor knows what is the correct facility to edit.
 
 - ### Facility Data structures:
     - `facility_node`: An individual facility.

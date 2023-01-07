@@ -187,7 +187,7 @@ void program_quit(struct program* program) {
     free(program);
 }
 
-int main() {
+int main(void) {
     // Initailise the program state and everything required.
     // Return to OS on failure to initialise.
     struct program* program = program_init();
