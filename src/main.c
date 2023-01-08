@@ -154,6 +154,7 @@ void program_loop(void* loop_argument) {
 
 
     // Initialise and draw Nuklear GUI widgets + elements.
+    // Switch between various menus depending on program state.
     if (nk_begin(program->nk_context, "Enterprise", 
     nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
         if (program->status == program_status_enterprise_menu) {
@@ -199,6 +200,16 @@ void program_loop(void* loop_argument) {
         if (program->status == program_status_customer_editor) {
             program->status = customer_editor(program->nk_context\
             ,program->enterprise->customer_list);
+        }
+
+        if (program->status == program_status_supplier_editor) {
+            program->status = supplier_editor(program->nk_context\
+            ,program->enterprise->supplier_list);
+        }
+
+        if (program->status == program_status_supplier_table) {
+            program->status = supplier_table(program->nk_context\
+            ,program->enterprise->supplier_list);
         }
     }
     nk_end(program->nk_context);
