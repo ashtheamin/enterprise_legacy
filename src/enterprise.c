@@ -9,6 +9,28 @@
 #include <limits.h>
 #include <time.h>
 
+// Import Nuklear.
+#ifndef ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+#define ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
+    #define NK_INCLUDE_FIXED_TYPES
+    #define NK_INCLUDE_STANDARD_IO
+    #define NK_INCLUDE_STANDARD_VARARGS
+    #define NK_INCLUDE_DEFAULT_ALLOCATOR
+    #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+    #define NK_INCLUDE_FONT_BAKING
+    #define NK_INCLUDE_DEFAULT_FONT
+    #define NK_IMPLEMENTATION
+    #define NK_SDL_GLES2_IMPLEMENTATION
+    #include "../third_party/Nuklear/nuklear.h"
+    #include "../third_party/Nuklear/demo/sdl_opengles2/nuklear_sdl_gles2.h"
+    #include "../third_party/Nuklear/demo/common/style.c"
+#endif
+
+#ifndef PROGRAM_STATES
+#define PROGRAM_STATES
+#include "program_states.c"
+#endif
+
 #include "constants.c"
 #include "facilities.c"
 
@@ -44,4 +66,14 @@ void enterprise_quit(struct enterprise* enterprise) {
         {facility_list_free(enterprise->facility_list);}
     free(enterprise);
     return;
+}
+
+// Render the enterprise menu GUI.
+enum program_status enterprise_menu\
+(struct nk_context* ctx, struct enterprise* enterprise) {
+    if (ctx == NULL || enterprise == NULL) 
+    return program_status_enterprise_menu;
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    nk_label(ctx, "Welcome to Enterprise", NK_TEXT_CENTERED);
+    return program_status_enterprise_menu;
 }

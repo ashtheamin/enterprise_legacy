@@ -25,7 +25,6 @@ enterprise database itself.
 #include <limits.h>
 #include <time.h>
 
-
 // Import Nuklear.
 #ifndef ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
 #define ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
@@ -130,7 +129,7 @@ struct program* program_init() {
     set_style(program->nk_context, THEME_BLUE);
 
     // Set program status:
-    program->status = program_status_facility_table;
+    program->status = program_status_enterprise_menu;
 
     // Initialise Enterprise database.
     program->enterprise = enterprise_new();
@@ -157,6 +156,11 @@ void program_loop(void* loop_argument) {
     // Initialise and draw Nuklear GUI widgets + elements.
     if (nk_begin(program->nk_context, "Enterprise", 
     nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
+        if (program->status == program_status_enterprise_menu) {
+            program->status = enterprise_menu(program->nk_context\
+            ,program->enterprise);
+        }
+
         if (program->status == program_status_facility_table) {
             program->status = facility_table(program->nk_context\
             ,program->enterprise->facility_list);

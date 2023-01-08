@@ -291,6 +291,7 @@ void facility_list_select_next_node(struct facility_list *facility_list) {
     }
 }
 
+// Change the currently selected ID to the passed in ID in the facility list.
 void facility_list_set_selected_id\
 (struct facility_list *facility_list, char* id) {
     if (facility_list == NULL || id == NULL) return;
@@ -305,21 +306,32 @@ void facility_list_set_selected_id\
     }
 }
 
+// Render the facility table GUI.
+// This function displays a list of facilities as a table that can be selected.
+// It is an overview.
 enum program_status facility_table(struct nk_context* ctx,\
 struct facility_list* facility_list) {
     if (ctx == NULL || facility_list == NULL) return program_status_running;
+
+    // Display the title.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
     nk_label(ctx, "Facility Menu", NK_TEXT_CENTERED);
 
+    // Create button to add new facilities to the table.
     if (nk_button_label(ctx, "New Facility")) {
         facility_list_append(facility_list);
     }
 
+    // If there are no facilities, warn the user.
     if (facility_list->head == NULL) {
         nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
         return program_status_facility_table;
     }
 
+    /* If there are facilities, go through the linked list of facilities.
+    Copy the data from each facility and make it a button label.
+    When the button is pressed, set the currently selected facility to that
+    facility and switch to facility editor.*/
     struct facility_node* facility = facility_list->head;
     char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
     while (facility != NULL) {
@@ -335,6 +347,8 @@ struct facility_list* facility_list) {
     return program_status_facility_table;
 }
 
+// Render the facility editor GUI.
+// It gives the user an opportunity to edit a currently selected facility.
 enum program_status facility_editor(struct nk_context* ctx,\
 struct facility_list* facility_list) {
     if (ctx == NULL || facility_list == NULL) return program_status_running;
