@@ -130,7 +130,7 @@ struct program* program_init() {
     set_style(program->nk_context, THEME_BLUE);
 
     // Set program status:
-    program->status = program_status_running;
+    program->status = program_status_facility_table;
 
     // Initialise Enterprise database.
     program->enterprise = enterprise_new();
@@ -157,8 +157,16 @@ void program_loop(void* loop_argument) {
     // Initialise and draw Nuklear GUI widgets + elements.
     if (nk_begin(program->nk_context, "Enterprise", 
     nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),NK_WINDOW_BORDER)) {
-        facility_editor(program->nk_context\
-        ,program->enterprise->facility_list);
+        if (program->status == program_status_facility_table) {
+            program->status = facility_table(program->nk_context\
+            ,program->enterprise->facility_list);
+        }
+
+        if (program->status == program_status_facility_editor) {
+            program->status = facility_editor(program->nk_context\
+            ,program->enterprise->facility_list);
+        }
+        
     }
     nk_end(program->nk_context);
 
