@@ -180,6 +180,16 @@ void program_loop(void* loop_argument) {
             program->status = employee_editor(program->nk_context\
             ,program->enterprise->employee_list);
         }
+
+        if (program->status == program_status_item_table) {
+            program->status = item_table(program->nk_context\
+            ,program->enterprise->item_list);
+        }
+
+        if (program->status == program_status_item_editor) {
+            program->status = item_editor(program->nk_context\
+            ,program->enterprise->item_list);
+        }
     }
     nk_end(program->nk_context);
 

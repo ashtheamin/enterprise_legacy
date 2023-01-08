@@ -366,7 +366,7 @@ struct employee_list* employee_list) {
 
     // Display title and return to employee table button.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
-    if (nk_button_label(ctx, "Return to employee table")) {
+    if (nk_button_label(ctx, "Return to Employee Table")) {
         return program_status_employee_table;
     }
     nk_label(ctx, "Employee Editor", NK_TEXT_CENTERED);
