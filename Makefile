@@ -18,7 +18,7 @@ $(BIN): prepare
 	$(CC) $(SRC) $(CFLAGS) -o bin/native/$(BIN) $(LIBS)
 
 web: prepare
-	emcc $(SRC) -Os -s USE_SDL=2 -o bin/web/index.html
+	emcc $(SRC) -Os -s USE_SDL=2 -o bin/web/index.html --embed-file ProggyClean.ttf
 
 prepare:
 	mkdir -p bin/native && mkdir -p bin/web/
