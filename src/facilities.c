@@ -55,12 +55,17 @@ facility editor dialogue.
 */
 
 // Facility node.
+enum facility_type \
+{facility_type_office, facility_type_store, facility_type_warehouse};
+
 struct facility_node {
     char id[ENTERPRISE_STRING_LENGTH];
     char name[ENTERPRISE_STRING_LENGTH];
     char email[ENTERPRISE_STRING_LENGTH];
     char phone[ENTERPRISE_STRING_LENGTH];
     char address[ENTERPRISE_STRING_LENGTH];
+
+    enum facility_type type;
 
     struct facility_node* prev;
     struct facility_node* next;
@@ -76,6 +81,8 @@ struct facility_node *facility_node_new() {
     strcpy(facility->email, "");
     strcpy(facility->phone, "");
     strcpy(facility->address, "");
+    
+    facility->type = facility_type_office;
 
     facility->prev = NULL;
     facility->next = NULL;
@@ -309,6 +316,20 @@ void facility_list_set_selected_id\
     }
 }
 
+// Get the facility type back as a string:
+char* facility_list_get_node_type(struct facility_list* facility_list, char* id) {
+    if (facility_list == NULL || id == NULL) return NULL;
+    
+    struct facility_node* facility = facility_list_get_node(facility_list, id);
+    if (facility == NULL) return NULL;
+
+    if (facility->type == facility_type_office) return "Office";
+    if (facility->type == facility_type_store) return "Store";
+    if (facility->type == facility_type_warehouse) return "Warehouse";
+
+    return NULL;
+}
+
 // Render the facility table GUI.
 // This function displays a list of facilities as a table that can be selected.
 // It is an overview.
@@ -343,9 +364,10 @@ struct facility_list* facility_list) {
     struct facility_node* facility = facility_list->head;
     char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
     while (facility != NULL) {
-        sprintf(print_buffer, "ID: %s Name: %s Email: %s Phone: %s Address: %s",\
-        facility->id, facility->name, facility->email,\
-        facility->phone, facility->address);
+        sprintf(print_buffer, \
+        "ID: %s Type: %s Name: %s Email: %s Phone: %s Address: %s",facility->id,\
+        facility_list_get_node_type(facility_list, facility->id),
+        facility->name, facility->email, facility->phone, facility->address);
 
         if (nk_button_label(ctx, print_buffer)) {
             strcpy(facility_list->id_currently_selected, facility->id);
@@ -400,6 +422,21 @@ struct facility_list* facility_list) {
     nk_layout_row_template_push_static(ctx, 150);
     nk_layout_row_template_push_dynamic(ctx);
     nk_layout_row_template_end(ctx);
+
+    // Create combo box for facility type.
+    int type = 0;
+    if (facility->type == facility_type_office) type = 0;
+    if (facility->type == facility_type_store) type = 1;
+    if (facility->type == facility_type_warehouse) type = 2;
+
+    const char* facility_types[] = {"Office", "Store", "Warehouse"};
+    nk_label(ctx, "Type: ", NK_TEXT_LEFT);
+    type = nk_combo(ctx, facility_types, NK_LEN(facility_types), type, \
+    ENTERPRISE_WIDGET_HEIGHT, nk_vec2(WINDOW_WIDTH, 200));
+
+    if (type == 0) facility->type = facility_type_office;
+    if (type == 1) facility->type = facility_type_store;
+    if (type == 2) facility->type = facility_type_warehouse;
 
     nk_label(ctx, "ID: ", NK_TEXT_LEFT);
     nk_edit_string_zero_terminated(ctx, NK_EDIT_READ_ONLY, \
