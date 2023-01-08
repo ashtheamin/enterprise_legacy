@@ -33,6 +33,7 @@
 
 #include "constants.c"
 #include "facilities.c"
+#include "employees.c"
 
 /* What does this file do?
 It provides the enterprise data structure, which holds all the data related to
@@ -45,6 +46,7 @@ struct enterprise {
     char name[ENTERPRISE_STRING_LENGTH];
     char balance[ENTERPRISE_STRING_LENGTH];
     struct facility_list* facility_list;
+    struct employee_list* employee_list;
 };
 
 // Enterprise instance constructor.
@@ -56,6 +58,7 @@ struct enterprise* enterprise_new() {
     strcpy(enterprise->name, "");
     strcpy(enterprise->balance, "");
     enterprise->facility_list = facility_list_new();
+    enterprise->employee_list = employee_list_new();
     return enterprise;
 }
 
@@ -64,6 +67,8 @@ void enterprise_quit(struct enterprise* enterprise) {
     if (enterprise == NULL) return;
     if (enterprise->facility_list != NULL) 
         {facility_list_free(enterprise->facility_list);}
+    if (enterprise->employee_list != NULL) 
+        {employee_list_free(enterprise->employee_list);}
     free(enterprise);
     return;
 }
@@ -92,6 +97,11 @@ enum program_status enterprise_menu\
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
     if (nk_button_label(ctx, "Facilities")) {
         return program_status_facility_table;
+    }
+
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    if (nk_button_label(ctx, "Employees")) {
+        return program_status_employee_table;
     }
 
     return program_status_enterprise_menu;

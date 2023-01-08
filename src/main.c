@@ -171,6 +171,15 @@ void program_loop(void* loop_argument) {
             ,program->enterprise->facility_list);
         }
         
+        if (program->status == program_status_employee_table) {
+            program->status = employee_table(program->nk_context\
+            ,program->enterprise->employee_list);
+        }
+
+        if (program->status == program_status_employee_editor) {
+            program->status = employee_editor(program->nk_context\
+            ,program->enterprise->employee_list);
+        }
     }
     nk_end(program->nk_context);
 
