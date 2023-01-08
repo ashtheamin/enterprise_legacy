@@ -35,6 +35,7 @@
 #include "facilities.c"
 #include "employees.c"
 #include "inventory.c"
+#include "customers.c"
 
 /* What does this file do?
 It provides the enterprise data structure, which holds all the data related to
@@ -49,6 +50,7 @@ struct enterprise {
     struct facility_list* facility_list;
     struct employee_list* employee_list;
     struct item_list* item_list;
+    struct customer_list* customer_list;
 };
 
 // Enterprise instance constructor.
@@ -62,6 +64,7 @@ struct enterprise* enterprise_new() {
     enterprise->facility_list = facility_list_new();
     enterprise->employee_list = employee_list_new();
     enterprise->item_list = item_list_new();
+    enterprise->customer_list = customer_list_new();
     return enterprise;
 }
 
@@ -74,6 +77,8 @@ void enterprise_quit(struct enterprise* enterprise) {
         {employee_list_free(enterprise->employee_list);}
     if (enterprise->item_list != NULL) 
         {item_list_free(enterprise->item_list);}
+    if (enterprise->customer_list != NULL) 
+        {customer_list_free(enterprise->customer_list);}
     free(enterprise);
     return;
 }
@@ -108,6 +113,9 @@ enum program_status enterprise_menu\
     }
     if (nk_button_label(ctx, "Inventory")) {
         return program_status_item_table;
+    }
+    if (nk_button_label(ctx, "Customers")) {
+        return program_status_customer_table;
     }
 
     return program_status_enterprise_menu;

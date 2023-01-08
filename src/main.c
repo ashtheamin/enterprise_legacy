@@ -190,6 +190,16 @@ void program_loop(void* loop_argument) {
             program->status = item_editor(program->nk_context\
             ,program->enterprise->item_list);
         }
+
+        if (program->status == program_status_customer_table) {
+            program->status = customer_table(program->nk_context\
+            ,program->enterprise->customer_list);
+        }
+
+        if (program->status == program_status_customer_editor) {
+            program->status = customer_editor(program->nk_context\
+            ,program->enterprise->customer_list);
+        }
     }
     nk_end(program->nk_context);
 
