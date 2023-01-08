@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
@@ -87,6 +88,7 @@ struct facility_list {
     struct facility_node *head;
     char id_last_assigned[ENTERPRISE_STRING_LENGTH];
     char id_currently_selected[ENTERPRISE_STRING_LENGTH];
+    bool deletion_requested;
 };
 
 // Facility list constructor.
@@ -97,6 +99,7 @@ struct facility_list* facility_list_new() {
     facility_list->head = NULL;
     strcpy(facility_list->id_last_assigned, "0");
     strcpy(facility_list->id_currently_selected, "0");
+    facility_list->deletion_requested = false;
     return facility_list;
 }
 
@@ -251,7 +254,7 @@ void facility_list_select_previous_node(struct facility_list *facility_list) {
 
     struct facility_node* facility = facility_list->head;
     while (facility != NULL) {
-        if (strcpy(facility->id, facility_list->id_currently_selected) == 0) {
+        if (strcmp(facility->id, facility_list->id_currently_selected) == 0) {
             if (facility->prev != NULL) {
                 strcpy(facility_list->id_currently_selected, facility->prev->id);
                 return;
@@ -276,7 +279,7 @@ void facility_list_select_next_node(struct facility_list *facility_list) {
 
     struct facility_node* facility = facility_list->head;
     while (facility != NULL) {
-        if (strcpy(facility->id, facility_list->id_currently_selected) == 0) {
+        if (strcmp(facility->id, facility_list->id_currently_selected) == 0) {
             if (facility->next != NULL) {
                 strcpy(facility_list->id_currently_selected, facility->next->id);
                 return;
@@ -313,8 +316,13 @@ enum program_status facility_table(struct nk_context* ctx,\
 struct facility_list* facility_list) {
     if (ctx == NULL || facility_list == NULL) return program_status_running;
 
-    // Display the title.
+    // Button to return to enterprise menu.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    if (nk_button_label(ctx, "Return to Enterprise Menu")) {
+        return program_status_enterprise_menu;
+    }
+
+    // Display the title.
     nk_label(ctx, "Facility Menu", NK_TEXT_CENTERED);
 
     // Create button to add new facilities to the table.
@@ -335,7 +343,10 @@ struct facility_list* facility_list) {
     struct facility_node* facility = facility_list->head;
     char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
     while (facility != NULL) {
-        sprintf(print_buffer, "ID: %s", facility->id);
+        sprintf(print_buffer, "ID: %s Name: %s Email: %s Phone: %s Address: %s",\
+        facility->id, facility->name, facility->email,\
+        facility->phone, facility->address);
+
         if (nk_button_label(ctx, print_buffer)) {
             strcpy(facility_list->id_currently_selected, facility->id);
             free(print_buffer);
@@ -351,11 +362,101 @@ struct facility_list* facility_list) {
 // It gives the user an opportunity to edit a currently selected facility.
 enum program_status facility_editor(struct nk_context* ctx,\
 struct facility_list* facility_list) {
-    if (ctx == NULL || facility_list == NULL) return program_status_running;
+    if (ctx == NULL || facility_list == NULL)
+        return program_status_enterprise_menu;
+
+    // Display title and return to facility table button.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
-    nk_label(ctx, "Facility Editor", NK_TEXT_CENTERED);
     if (nk_button_label(ctx, "Return to facility table")) {
         return program_status_facility_table;
     }
+    nk_label(ctx, "Facility Editor", NK_TEXT_CENTERED);
+    
+    // Select currently selected facility.
+    struct facility_node* facility = facility_list_get_node\
+    (facility_list, facility_list->id_currently_selected);
+
+    // If the currently selected facility does not exist:
+    if (facility == NULL) {
+        // Select the first facility instead.
+        if (facility_list->head != NULL) {
+            strcpy(facility_list->id_currently_selected, facility_list->head->id);
+            return program_status_facility_editor;
+        }
+
+        // Else tell the user to create a new facility 
+        // if the first facility doesn't exist.
+        else {
+            nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
+            if (nk_button_label(ctx, "New Facility")) {
+                facility_list_append(facility_list);
+            }
+            return program_status_facility_editor;
+        }
+    }
+
+    // Display edit fields to edit facility entries.
+    nk_layout_row_template_begin(ctx, ENTERPRISE_WIDGET_HEIGHT);
+    nk_layout_row_template_push_static(ctx, 150);
+    nk_layout_row_template_push_dynamic(ctx);
+    nk_layout_row_template_end(ctx);
+
+    nk_label(ctx, "ID: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_READ_ONLY, \
+    facility->id, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_label(ctx, "Name: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
+    facility->name, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_label(ctx, "Phone: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
+    facility->phone, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_label(ctx, "Email: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
+    facility->email, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_label(ctx, "Address: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
+    facility->address, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    // Move between next and previous facilities.
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 2);
+    if (nk_button_symbol_label\
+    (ctx, NK_SYMBOL_TRIANGLE_LEFT, "prev", NK_TEXT_RIGHT)) {
+        facility_list_select_previous_node(facility_list);
+    }
+
+    if (nk_button_symbol_label\
+    (ctx, NK_SYMBOL_TRIANGLE_RIGHT, "next", NK_TEXT_LEFT)) {
+        facility_list_select_next_node(facility_list);
+    }
+
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    // Create new facility button.
+    if (nk_button_label(ctx, "New Facility")) {
+        facility_list_append(facility_list);
+    }
+
+    // Create deletion button.
+    // This will ask the user to confirm whether they want to delete the node.
+    if (nk_button_label(ctx, "Delete Facility")) {
+        facility_list->deletion_requested = true;
+    }
+
+    if (facility_list->deletion_requested == true) {
+        nk_label(ctx, "Confirm deletion?", NK_TEXT_CENTERED);
+        nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 2);
+
+        if (nk_button_label(ctx, "Yes")) {
+            facility_list_delete_node(facility_list, facility->id);
+            facility_list->deletion_requested = false;
+        }
+        if (nk_button_label(ctx, "No")) {
+            facility_list->deletion_requested = false;
+        }        
+    }
+    
     return program_status_facility_editor;
 }

@@ -75,5 +75,24 @@ enum program_status enterprise_menu\
     return program_status_enterprise_menu;
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
     nk_label(ctx, "Welcome to Enterprise", NK_TEXT_CENTERED);
+    
+    nk_layout_row_template_begin(ctx, ENTERPRISE_WIDGET_HEIGHT);
+    nk_layout_row_template_push_static(ctx, 150);
+    nk_layout_row_template_push_dynamic(ctx);
+    nk_layout_row_template_end(ctx);
+
+    nk_label(ctx, "Name: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, enterprise->name,\
+    ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_label(ctx, "Balance: ", NK_TEXT_LEFT);
+    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, enterprise->balance,\
+    ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    if (nk_button_label(ctx, "Facilities")) {
+        return program_status_facility_table;
+    }
+
     return program_status_enterprise_menu;
 }
