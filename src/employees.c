@@ -34,6 +34,8 @@
     #include "../third_party/Nuklear/demo/common/style.c"
 #endif
 
+#include "employee_facilities.c"
+
 /* How employees work.
 employees are stored in a struct that contains a pointer to the head of a
 linked list containing all the employees. The struct that stores the linked
@@ -61,6 +63,7 @@ struct employee_node {
     char phone[ENTERPRISE_STRING_LENGTH];
     char address[ENTERPRISE_STRING_LENGTH];
 
+    struct employee_facility_list* employee_facility_list;
     struct employee_node* prev;
     struct employee_node* next;
 };
@@ -76,10 +79,21 @@ struct employee_node *employee_node_new() {
     strcpy(employee->phone, "");
     strcpy(employee->address, "");
 
+    employee->employee_facility_list = NULL;
+
     employee->prev = NULL;
     employee->next = NULL;
 
     return employee;
+}
+
+// Free everything associated with an employee.
+void employee_node_free(struct employee_node* employee) {
+    if (employee == NULL) return;
+    if (employee->employee_facility_list != NULL) {
+        employee_facility_list_free(employee->employee_facility_list);
+    }
+    free(employee);
 }
 
 // employee list metadata structure.
@@ -102,13 +116,15 @@ struct employee_list* employee_list_new() {
     return employee_list;
 }
 
+
+
 // Free an entire employee linked list
 void employee_node_linked_list_free(struct employee_node* employee) {
     if (employee == NULL) return;
     struct employee_node* next = NULL;
     while (employee != NULL) {
         next = employee->next;
-        free(employee);
+        employee_node_free(employee);
         employee = next;
     }
 }
@@ -197,13 +213,13 @@ void employee_list_delete_node(struct employee_list *employee_list, char *id) {
     // Delete the head if it is the ID that is requested to be deleted.
     if (strcmp(id, employee_list->head->id) == 0) {
         if (employee_list->head->next == NULL) {
-            free(employee_list->head);
+            employee_node_free(employee_list->head);
             employee_list->head = NULL;
             return;
         }
 
         struct employee_node *next = employee_list->head->next;
-        free(employee_list->head);
+        employee_node_free(employee_list->head);
         employee_list->head = next;
         return;
     }
@@ -242,7 +258,7 @@ void employee_list_delete_node(struct employee_list *employee_list, char *id) {
     }
 
     // Delete the employee
-    free(employee);
+    employee_node_free(employee);
     return;
 }
 
@@ -419,6 +435,14 @@ struct employee_list* employee_list) {
     nk_label(ctx, "Address: ", NK_TEXT_LEFT);
     nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
     employee->address, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    if (nk_button_label(ctx, "Facilities")) {
+        if (employee->employee_facility_list == NULL) {
+            employee->employee_facility_list = employee_facility_list_new();
+        }
+        return program_status_employee_facility_table;
+    }
 
     // Move between next and previous employees.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 2);

@@ -139,7 +139,7 @@ enum program_status enterprise_menu\
         return program_status_expense_table;
     }
     if (nk_button_label(ctx, "Orders")) {
-        return program_status_expense_table;
+        return program_status_order_table;
     }
     return program_status_enterprise_menu;
 }

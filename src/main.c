@@ -227,9 +227,18 @@ void program_loop(void* loop_argument) {
             ,program->enterprise->order_list);
         }
 
-        if (program->status == program_status_order_table) {
-            program->status = order_table(program->nk_context\
-            ,program->enterprise->order_list);
+        if (program->status == program_status_employee_facility_editor) {
+            program->status = employee_facility_editor(program->nk_context\
+            ,employee_list_get_node(program->enterprise->employee_list,\
+            program->enterprise->employee_list->id_currently_selected)\
+            ->employee_facility_list);
+        }
+        
+        if (program->status == program_status_employee_facility_table) {
+            program->status = employee_facility_table(program->nk_context\
+            ,employee_list_get_node(program->enterprise->employee_list,\
+            program->enterprise->employee_list->id_currently_selected)\
+            ->employee_facility_list);
         }
     }
     nk_end(program->nk_context);

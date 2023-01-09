@@ -329,7 +329,7 @@ struct item_list* item_list) {
 
     // If there are no items, warn the user.
     if (item_list->head == NULL) {
-        nk_label(ctx, "No items found.", NK_TEXT_CENTERED);
+        nk_label(ctx, "No Items found.", NK_TEXT_CENTERED);
         return program_status_item_table;
     }
 
@@ -384,7 +384,7 @@ struct item_list* item_list) {
         // Else tell the user to create a new item 
         // if the first item doesn't exist.
         else {
-            nk_label(ctx, "No items found.", NK_TEXT_CENTERED);
+            nk_label(ctx, "No Items found.", NK_TEXT_CENTERED);
             if (nk_button_label(ctx, "New Item")) {
                 item_list_append(item_list);
             }
