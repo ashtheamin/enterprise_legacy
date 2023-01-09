@@ -389,7 +389,7 @@ struct facility_list* facility_list) {
 
     // Display title and return to facility table button.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
-    if (nk_button_label(ctx, "Return to facility table")) {
+    if (nk_button_label(ctx, "Return to Facility Table")) {
         return program_status_facility_table;
     }
     nk_label(ctx, "Facility Editor", NK_TEXT_CENTERED);
@@ -409,7 +409,7 @@ struct facility_list* facility_list) {
         // Else tell the user to create a new facility 
         // if the first facility doesn't exist.
         else {
-            nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
+            nk_label(ctx, "No Facilities found.", NK_TEXT_CENTERED);
             if (nk_button_label(ctx, "New Facility")) {
                 facility_list_append(facility_list);
             }

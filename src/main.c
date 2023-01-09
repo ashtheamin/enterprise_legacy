@@ -221,6 +221,16 @@ void program_loop(void* loop_argument) {
             program->status = expense_table(program->nk_context\
             ,program->enterprise->expense_list);
         }
+
+        if (program->status == program_status_order_editor) {
+            program->status = order_editor(program->nk_context\
+            ,program->enterprise->order_list);
+        }
+
+        if (program->status == program_status_order_table) {
+            program->status = order_table(program->nk_context\
+            ,program->enterprise->order_list);
+        }
     }
     nk_end(program->nk_context);
 

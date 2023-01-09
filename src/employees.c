@@ -331,7 +331,7 @@ struct employee_list* employee_list) {
 
     // If there are no employees, warn the user.
     if (employee_list->head == NULL) {
-        nk_label(ctx, "No employees found.", NK_TEXT_CENTERED);
+        nk_label(ctx, "No Employees found.", NK_TEXT_CENTERED);
         return program_status_employee_table;
     }
 
@@ -386,7 +386,7 @@ struct employee_list* employee_list) {
         // Else tell the user to create a new employee 
         // if the first employee doesn't exist.
         else {
-            nk_label(ctx, "No employees found.", NK_TEXT_CENTERED);
+            nk_label(ctx, "No Employees found.", NK_TEXT_CENTERED);
             if (nk_button_label(ctx, "New Employee")) {
                 employee_list_append(employee_list);
             }
