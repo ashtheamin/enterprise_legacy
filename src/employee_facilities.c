@@ -185,6 +185,21 @@ struct employee_facility_node *employee_facility_list_get_node\
     return NULL;
 }
 
+// Return a pointer to a employee_facility node according to facility ID.
+// Returns NULL on failure.
+struct employee_facility_node *employee_facility_list_get_node_by_facility_id\
+(struct employee_facility_list *employee_facility_list, char *id) {
+    if (employee_facility_list == NULL || id == NULL) return NULL;
+    if (employee_facility_list->head == NULL) return NULL;
+
+    struct employee_facility_node* employee_facility = employee_facility_list->head;
+    while (employee_facility != NULL) {
+        if (strcmp(employee_facility->facility_id, id) == 0) return employee_facility;
+        employee_facility = employee_facility->next;
+    }
+    return NULL;
+}
+
 // Searches for a employee_facility by ID and deletes it
 void employee_facility_list_delete_node(struct employee_facility_list *employee_facility_list, char *id) {
     if (employee_facility_list == NULL || id == NULL) return;
@@ -328,44 +343,68 @@ struct facility_list* facility_list) {
     }
 
     else {
+        // Display the title.
+        nk_label(ctx, "Employee Facilities Menu", NK_TEXT_CENTERED);
+        nk_label(ctx, "Facilities employee currently works at: ", NK_TEXT_CENTERED);
 
-    // Display the title.
-    nk_label(ctx, "Employee Facilities Menu", NK_TEXT_CENTERED);
+        // Present all facilities that the employee works for.
+        struct employee_facility_node* employee_facility\
+        = employee_facility_list->head;
+        char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
+        while (employee_facility != NULL) {
 
-    // Create button to add new employee facilities to the table.
-    if (nk_button_label(ctx, "Add Facility")) {
-        employee_facility_list_append(employee_facility_list);
-        employee_facility_list->addition_requested = true;
-    }
+            struct facility_node* facility = facility_list_get_node(\
+            facility_list, employee_facility->id);
 
-    // If there are no employee facilities, warn the user.
-    if (employee_facility_list->head == NULL) {
-        nk_label(ctx, "Employee doesn't seem to work for any facilities.",\
-        NK_TEXT_CENTERED);
-        return program_status_employee_facility_table;
-    }
+            sprintf(print_buffer, "Facility ID: %s Name: %s", \
+            employee_facility->id, facility->name);
 
-    struct employee_facility_node* employee_facility\
-    = employee_facility_list->head;
-    char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
-    while (employee_facility != NULL) {
-        sprintf(print_buffer, "Facility ID: %s ", employee_facility->id);
-
-        if (nk_button_label(ctx, print_buffer)) {
-            strcpy(employee_facility_list->id_currently_selected,\
-            employee_facility->id);
-            free(print_buffer);
-            return program_status_employee_facility_editor;
+            if (nk_button_label(ctx, print_buffer)) {
+                strcpy(employee_facility_list->id_currently_selected,\
+                employee_facility->id);
+                free(print_buffer);
+                return program_status_employee_facility_editor;
+            }
+            employee_facility = employee_facility->next;
         }
-        employee_facility = employee_facility->next;
-    }
-    free(print_buffer);
+        free(print_buffer);
 
-    if (employee_facility_list->addition_requested == true) {
-        nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
-        
-    }
-    return program_status_employee_facility_table;
+        // Create button to add new employee facilities to the table.
+        if (nk_button_label(ctx, "Add Facility")) {
+            employee_facility_list->addition_requested = true;
+        }
+
+        /* If we want to add a new facility.
+        Search through all the facilities in the facility table, display the 
+        facilities that aren't currently worked for by the employee, and 
+        if clicked on, add it to the list of facilities the current employee 
+        works for. */
+        if (employee_facility_list->addition_requested == true) {
+            nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
+            print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
+            struct facility_node* facility = facility_list->head;
+
+            while (facility != NULL) {
+                bool show = false;
+                sprintf(print_buffer, "ID : %s Facility Name: %s",\
+                facility->id, facility->name);
+                if (employee_facility_list_get_node_by_facility_id(\
+                employee_facility_list,facility->id) == NULL) show = true;
+                    if (show == true) {
+                        if (nk_button_label(ctx, print_buffer)) {
+                            employee_facility_list_append(employee_facility_list);
+
+                            strcpy(employee_facility_list_get_node\
+                            (employee_facility_list,\
+                            employee_facility_list->id_currently_selected)\
+                            ->facility_id, facility->id);
+                            employee_facility_list->addition_requested = false;
+                        }
+                    }
+                facility = facility->next;
+            }
+            free(print_buffer);
+        }
     }
     return program_status_employee_facility_table;
 }
@@ -405,6 +444,7 @@ struct facility_list* facility_list) {
             nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
             if (nk_button_label(ctx, "New Facility")) {
                 employee_facility_list->addition_requested = true;
+
             }
             return program_status_employee_facility_editor;
         }
@@ -418,7 +458,7 @@ struct facility_list* facility_list) {
 
     nk_label(ctx, "Facility ID: ", NK_TEXT_LEFT);
     nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
-    employee_facility->id, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+    employee_facility->facility_id, ENTERPRISE_STRING_LENGTH, nk_filter_default);
 
     // Move between next and previous employee_facilitys.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 2);
@@ -456,6 +496,39 @@ struct facility_list* facility_list) {
             employee_facility_list->deletion_requested = false;
         }        
     }
+
+     // Create button to add new employee facilities to the table.
+    if (nk_button_label(ctx, "Add Facility")) {
+        employee_facility_list->addition_requested = true;
+    }
+
+    if (employee_facility_list->addition_requested == true) {
+            nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
+            char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
+            struct facility_node* facility = facility_list->head;
+
+            while (facility != NULL) {
+                bool show = false;
+                sprintf(print_buffer, "ID : %s Facility Name: %s",\
+                facility->id, facility->name);
+                if (employee_facility_list_get_node_by_facility_id(\
+                employee_facility_list,facility->id) == NULL) show = true;
+                    if (show == true) {
+                        if (nk_button_label(ctx, print_buffer)) {
+                            employee_facility_list_append(employee_facility_list);
+
+                            strcpy(employee_facility_list_get_node\
+                            (employee_facility_list,\
+                            employee_facility_list->id_currently_selected)\
+                            ->facility_id, facility->id);
+                            employee_facility_list->addition_requested = false;
+                        }
+                    }
+                facility = facility->next;
+            }
+            free(print_buffer);
+            
+        }
     
     return program_status_employee_facility_editor;
 }
