@@ -209,6 +209,21 @@ void program_loop(void* loop_argument) {
             ,program->enterprise->item_list);
         }
 
+        if (program->status == program_status_item_facility_editor) {
+            program->status = item_facility_editor(program->nk_context\
+            ,item_list_get_node(program->enterprise->item_list,\
+            program->enterprise->item_list->id_currently_selected)\
+            ->item_facility_list, program->enterprise->facility_list);
+        }
+        
+        // Show what facilities the currently selected item works at.
+        if (program->status == program_status_item_facility_table) {
+            program->status = item_facility_table(program->nk_context\
+            ,item_list_get_node(program->enterprise->item_list,\
+            program->enterprise->item_list->id_currently_selected)\
+            ->item_facility_list, program->enterprise->facility_list);
+        }
+
         if (program->status == program_status_customer_table) {
             program->status = customer_table(program->nk_context\
             ,program->enterprise->customer_list);

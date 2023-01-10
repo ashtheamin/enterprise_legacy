@@ -367,6 +367,7 @@ struct facility_list* facility_list) {
 
             struct facility_node* facility = facility_list_get_node(\
             facility_list, employee_facility->id);
+            if (facility == NULL) break;
 
             sprintf(print_buffer, "Facility ID: %s Name: %s", \
             employee_facility->id, facility->name);
@@ -382,6 +383,7 @@ struct facility_list* facility_list) {
         free(print_buffer);
 
         // Create button to add new employee facilities to the table.
+        nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
         if (nk_button_label(ctx, "Add Facility")) {
             if (employee_facility_list_get_num_employee_facility_nodes\
             (employee_facility_list) != facility_list_get_num_facility_nodes(\
@@ -488,10 +490,6 @@ struct facility_list* facility_list) {
     }
 
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
-    // Create new employee_facility button.
-    if (nk_button_label(ctx, "New employee facility")) {
-        employee_facility_list_append(employee_facility_list);
-    }
 
     // Create deletion button.
     // This will ask the user to confirm whether they want to delete the node.

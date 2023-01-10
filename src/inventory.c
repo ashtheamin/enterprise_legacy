@@ -16,6 +16,8 @@
 #include "program_states.c"
 #endif
 
+#include "inventory_facility.c"
+
 
 // Import Nuklear.
 #ifndef ENTERPRISE_NUKLEAR_LIBRARY_IMPORT
@@ -60,6 +62,8 @@ struct item_node {
     char retail_price[ENTERPRISE_STRING_LENGTH];
     char internal_cost[ENTERPRISE_STRING_LENGTH];
 
+    struct item_facility_list* item_facility_list;
+
     struct item_node* prev;
     struct item_node* next;
 };
@@ -73,6 +77,8 @@ struct item_node *item_node_new() {
     strcpy(item->name, "");
     strcpy(item->retail_price, "");
     strcpy(item->internal_cost, "");
+
+    item->item_facility_list = NULL;
 
     item->prev = NULL;
     item->next = NULL;
@@ -100,13 +106,21 @@ struct item_list* item_list_new() {
     return item_list;
 }
 
+void item_node_free(struct item_node* item) {
+    if (item == NULL) return;
+    if (item->item_facility_list != NULL) {
+        item_facility_list_free(item->item_facility_list);
+    }
+    free(item);
+}
+
 // Free an entire item linked list
 void item_node_linked_list_free(struct item_node* item) {
     if (item == NULL) return;
     struct item_node* next = NULL;
     while (item != NULL) {
         next = item->next;
-        free(item);
+        item_node_free(item);
         item = next;
     }
 }
@@ -195,13 +209,13 @@ void item_list_delete_node(struct item_list *item_list, char *id) {
     // Delete the head if it is the ID that is requested to be deleted.
     if (strcmp(id, item_list->head->id) == 0) {
         if (item_list->head->next == NULL) {
-            free(item_list->head);
+            item_node_free(item_list->head);
             item_list->head = NULL;
             return;
         }
 
         struct item_node *next = item_list->head->next;
-        free(item_list->head);
+        item_node_free(item_list->head);
         item_list->head = next;
         return;
     }
@@ -240,7 +254,7 @@ void item_list_delete_node(struct item_list *item_list, char *id) {
     }
 
     // Delete the item
-    free(item);
+    item_node_free(item);
     return;
 }
 
@@ -413,6 +427,14 @@ struct item_list* item_list) {
     nk_label(ctx, "Internal Cost: ", NK_TEXT_LEFT);
     nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, \
     item->internal_cost, ENTERPRISE_STRING_LENGTH, nk_filter_default);
+
+    nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
+    if (nk_button_label(ctx, "Stock")) {
+        if (item->item_facility_list == NULL) {
+            item->item_facility_list = item_facility_list_new();
+        }
+        return program_status_item_facility_table;
+    }
 
     // Move between next and previous items.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 2);
