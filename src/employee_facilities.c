@@ -34,6 +34,18 @@
     #include "../third_party/Nuklear/demo/common/style.c"
 #endif
 
+#ifndef ENTERPRISE_LIBRARIES
+#define ENTERPRISE_LIBRARIES
+#include "constants.c"
+#include "facilities.c"
+#include "employees.c"
+#include "inventory.c"
+#include "customers.c"
+#include "suppliers.c"
+#include "expenses.c"
+#include "orders.c"
+#endif
+
 /* How employee_facilitys work.
 employee_facilitys are stored in a struct that contains a pointer to the head of a
 linked list containing all the employee_facilitys. The struct that stores the linked
@@ -371,7 +383,11 @@ struct facility_list* facility_list) {
 
         // Create button to add new employee facilities to the table.
         if (nk_button_label(ctx, "Add Facility")) {
+            if (employee_facility_list_get_num_employee_facility_nodes\
+            (employee_facility_list) != facility_list_get_num_facility_nodes(\
+            facility_list)) {
             employee_facility_list->addition_requested = true;
+        }
         }
 
         /* If we want to add a new facility.
@@ -380,7 +396,6 @@ struct facility_list* facility_list) {
         if clicked on, add it to the list of facilities the current employee 
         works for. */
         if (employee_facility_list->addition_requested == true) {
-            nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
             print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
             struct facility_node* facility = facility_list->head;
 
@@ -499,11 +514,14 @@ struct facility_list* facility_list) {
 
      // Create button to add new employee facilities to the table.
     if (nk_button_label(ctx, "Add Facility")) {
-        employee_facility_list->addition_requested = true;
+        if (employee_facility_list_get_num_employee_facility_nodes\
+        (employee_facility_list) != facility_list_get_num_facility_nodes(\
+        facility_list)) {
+            employee_facility_list->addition_requested = true;
+        }
     }
 
     if (employee_facility_list->addition_requested == true) {
-            nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
             char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
             struct facility_node* facility = facility_list->head;
 

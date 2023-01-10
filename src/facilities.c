@@ -34,6 +34,7 @@
     #include "../third_party/Nuklear/demo/common/style.c"
 #endif
 
+
 /* How facilities work.
 Facilities are stored in a struct that contains a pointer to the head of a
 linked list containing all the facilities. The struct that stores the linked

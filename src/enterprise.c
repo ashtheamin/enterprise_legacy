@@ -31,6 +31,8 @@
 #include "program_states.c"
 #endif
 
+#ifndef ENTERPRISE_LIBRARIES
+#define ENTERPRISE_LIBRARIES
 #include "constants.c"
 #include "facilities.c"
 #include "employees.c"
@@ -39,6 +41,7 @@
 #include "suppliers.c"
 #include "expenses.c"
 #include "orders.c"
+#endif
 
 /* What does this file do?
 It provides the enterprise data structure, which holds all the data related to
