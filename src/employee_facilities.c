@@ -82,6 +82,7 @@ struct employee_facility_list {
     char id_last_assigned[ENTERPRISE_STRING_LENGTH];
     char id_currently_selected[ENTERPRISE_STRING_LENGTH];
     bool deletion_requested;
+    bool addition_requested;
 };
 
 // employee_facility list constructor.
@@ -93,6 +94,7 @@ struct employee_facility_list* employee_facility_list_new() {
     strcpy(employee_facility_list->id_last_assigned, "0");
     strcpy(employee_facility_list->id_currently_selected, "0");
     employee_facility_list->deletion_requested = false;
+    employee_facility_list->addition_requested = false;
     return employee_facility_list;
 }
 
@@ -302,12 +304,13 @@ void employee_facility_list_set_selected_id\
     }
 }
 
-// Render the employee_facility table GUI.
-// This function displays a list of employee_facilitys as a table that can be selected.
-// It is an overview.
+// Render the employee facilities table GUI.
+// This is an overview of the facilities that an employee works at.
 enum program_status employee_facility_table(struct nk_context* ctx,\
-struct employee_facility_list* employee_facility_list) {
-    if (ctx == NULL || employee_facility_list == NULL) return program_status_running;
+struct employee_facility_list* employee_facility_list, \
+struct facility_list* facility_list) {
+    if (ctx == NULL || employee_facility_list == NULL)\
+    return program_status_employee_editor;
 
     // Button to return to employee editor.
     nk_layout_row_dynamic(ctx, ENTERPRISE_WIDGET_HEIGHT, 1);
@@ -315,44 +318,63 @@ struct employee_facility_list* employee_facility_list) {
         return program_status_employee_editor;
     }
 
+    // Handle case where there are no facilities.
+    if (facility_list->head == NULL) {
+        nk_label(ctx, "There are no facilities available to add employee to.",\
+        NK_TEXT_CENTERED);
+        if (nk_button_label(ctx, "Go to facility table.")) {
+            return program_status_facility_table;
+        }
+    }
+
+    else {
+
     // Display the title.
     nk_label(ctx, "Employee Facilities Menu", NK_TEXT_CENTERED);
 
-    // Create button to add new employee_facilitys to the table.
+    // Create button to add new employee facilities to the table.
     if (nk_button_label(ctx, "Add Facility")) {
         employee_facility_list_append(employee_facility_list);
+        employee_facility_list->addition_requested = true;
     }
 
-    // If there are no employee_facilitys, warn the user.
+    // If there are no employee facilities, warn the user.
     if (employee_facility_list->head == NULL) {
-        nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
+        nk_label(ctx, "Employee doesn't seem to work for any facilities.",\
+        NK_TEXT_CENTERED);
         return program_status_employee_facility_table;
     }
 
-    /* If there are employee_facilitys, go through the linked list of employee_facilitys.
-    Copy the data from each employee_facility and make it a button label.
-    When the button is pressed, set the currently selected employee_facility to that
-    employee_facility and switch to employee_facility editor.*/
-    struct employee_facility_node* employee_facility = employee_facility_list->head;
+    struct employee_facility_node* employee_facility\
+    = employee_facility_list->head;
     char* print_buffer = malloc(sizeof(char) * ENTERPRISE_STRING_LENGTH * 10);
     while (employee_facility != NULL) {
         sprintf(print_buffer, "Facility ID: %s ", employee_facility->id);
 
         if (nk_button_label(ctx, print_buffer)) {
-            strcpy(employee_facility_list->id_currently_selected, employee_facility->id);
+            strcpy(employee_facility_list->id_currently_selected,\
+            employee_facility->id);
             free(print_buffer);
             return program_status_employee_facility_editor;
         }
         employee_facility = employee_facility->next;
     }
     free(print_buffer);
+
+    if (employee_facility_list->addition_requested == true) {
+        nk_label(ctx, "Addition was requested", NK_TEXT_CENTERED);
+        
+    }
+    return program_status_employee_facility_table;
+    }
     return program_status_employee_facility_table;
 }
 
 // Render the employee_facility editor GUI.
 // It gives the user an opportunity to edit a currently selected employee_facility.
 enum program_status employee_facility_editor(struct nk_context* ctx,\
-struct employee_facility_list* employee_facility_list) {
+struct employee_facility_list* employee_facility_list, \
+struct facility_list* facility_list) {
     if (ctx == NULL || employee_facility_list == NULL)
         return program_status_enterprise_menu;
 
@@ -364,14 +386,16 @@ struct employee_facility_list* employee_facility_list) {
     nk_label(ctx, "Employee Facility Editor", NK_TEXT_CENTERED);
     
     // Select currently selected employee_facility.
-    struct employee_facility_node* employee_facility = employee_facility_list_get_node\
-    (employee_facility_list, employee_facility_list->id_currently_selected);
+    struct employee_facility_node* employee_facility = \
+    employee_facility_list_get_node(employee_facility_list,\
+    employee_facility_list->id_currently_selected);
 
     // If the currently selected employee_facility does not exist:
     if (employee_facility == NULL) {
         // Select the first employee_facility instead.
         if (employee_facility_list->head != NULL) {
-            strcpy(employee_facility_list->id_currently_selected, employee_facility_list->head->id);
+            strcpy(employee_facility_list->id_currently_selected, \
+            employee_facility_list->head->id);
             return program_status_employee_facility_editor;
         }
 
@@ -380,7 +404,7 @@ struct employee_facility_list* employee_facility_list) {
         else {
             nk_label(ctx, "No facilities found.", NK_TEXT_CENTERED);
             if (nk_button_label(ctx, "New Facility")) {
-                employee_facility_list_append(employee_facility_list);
+                employee_facility_list->addition_requested = true;
             }
             return program_status_employee_facility_editor;
         }
